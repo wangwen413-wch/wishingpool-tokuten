@@ -72,7 +72,7 @@
 
   <div class="panel">
     <h3>怎麼排？</h3>
-    <p class="rule">① 年曆買越多越優先 → ② 年曆團總金額越高越優先 → ③ 同樣的比誰先下單。每本年曆一張成員卡，依下單時填的志願順序，從排第一的人開始給。單買純年曆的人，領各通路剩下的卡；沒人領的標「誠徵」。</p>
+    <p class="rule">① 年曆買越多越優先 → ② 年曆團總金額越高越優先 → ③ 同樣的比誰先下單。每本年曆一張成員卡，依下單時填的志願順序，從排第一的人開始給。目前先預排；到貨後依實際張數更新。單買純年曆的人，領各通路剩下的卡（一人一張）；沒人領的標「誠徵」。</p>
   </div>
 
   <div class="panel edit" id="editPanel">
@@ -93,7 +93,7 @@ const MEMBERS = [
   {k:'光', name:'李起光', heart:'💚'},
   {k:'雲', name:'孫東雲', heart:'💜'}
 ];
-const CHANNELS = ['HL SHOP','APPLE MUSIC 預購','APPLE MUSIC 線上','APPLE MUSIC 線下','OFFIK','SOUNDWAVE'];
+const CHANNELS = ['HL SHOP','APPLE MUSIC 預購','OFFIK','SOUNDWAVE','APPLE MUSIC 線上','APPLE MUSIC 線下'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const FEED_URL = 'https://ukcvobwtmrgnmrxjpvri.supabase.co/functions/v1/tokuten-feed';
@@ -120,7 +120,7 @@ function build(feed){
   return {byChannel};
 }
 
-function allocate(units, pureAll, stock){
+function allocate(units, pureAll, stock, where){
   const left = stock.slice();
   const cols = [[],[],[],[]];
   const unplaced = [];
@@ -130,35 +130,46 @@ function allocate(units, pureAll, stock){
     left[pick]--; cols[pick].push({t:'o', u});
   }
   // 剩下的卡：純年曆依序領，其餘誠徵
-  const pure = pureAll.slice();
+  const pure = pureAll;   // 共用佇列：同一位純年曆只會領到一張
   for (let m=0;m<4;m++){
     while (left[m] > 0){
       left[m]--;
-      cols[m].push(pure.length ? {t:'pure', u:pure.shift()} : {t:'seek'});
+      if (pure.length){ const p = pure.shift(); p.where = where; cols[m].push({t:'pure', u:p}); }
+      else cols[m].push({t:'seek'});
     }
   }
   return {cols, unplaced, purePending: pure};
 }
 
 
-function renderBoard(ch, b, stock){
-  const total = stock ? stock.reduce((a,x)=>a+x,0) : 0;
-  const slug = SLUG[ch];
+function computeAll(){
+  const info = build(FEED);
+  const pureQ = (FEED.pure || []).slice().sort((x,y)=>new Date(x.created)-new Date(y.created)).map(p=>({...p}));
+  const pureAll = pureQ.slice();
+  const res = {};
+  for (const ch of CHANNELS){
+    const b = info.byChannel[ch];
+    const given = activeStock()[ch];
+    const hasGiven = given && given.reduce((a,x)=>a+x,0) > 0;
+    const S = Math.ceil(b.units.length / 4);
+    const stock = hasGiven ? given : [S,S,S,S];
+    res[ch] = {b, mode: hasGiven ? 'real' : 'auto', S, stock, out: b.units.length || hasGiven ? allocate(b.units, pureQ, stock, ch) : null};
+  }
+  return {info, res, pureAll, pureLeft: pureQ};
+}
+
+function renderBoard(ch, r){
+  const b = r.b, slug = SLUG[ch];
   let html = `<div class="board"><h2>${esc(ch)}</h2><div class="heads">` +
     MEMBERS.map((m,i)=>`<div class="mh m${i}"><span class="dot">${m.heart}</span>${m.name}</div>`).join('') + `</div>` +
     `<div class="cards">` + MEMBERS.map((m,i)=>`<img src="images/${slug}-${i}.webp" alt="${esc(ch)} ${m.name}" loading="lazy">`).join('') + `</div>` +
     `<div class="caption">${esc(CAPTION[ch])}</div>`;
-  if (!b.units.length && !total){
-    return html + `<div class="note">目前還沒有人下單這個通路</div></div>`;
-  }
-  if (!total){
-    return html + `<div class="note">到貨後公布分配結果<br>目前 ${b.units.length} 本含特典・${b.pure.length} 本單買純年曆</div></div>`;
-  }
-  const {cols, unplaced, purePending} = allocate(b.units, b.pure, stock);
+  if (!r.out) return html + `<div class="note">目前還沒有人下單這個通路</div></div>`;
+  const {cols, unplaced} = r.out;
   const n = Math.max(0, ...cols.map(c=>c.length));
-  for (let r=0;r<n;r++){
+  for (let k=0;k<n;k++){
     html += `<div class="row">` + cols.map((c,i)=>{
-      const x = c[r];
+      const x = c[k];
       if (!x) return `<div class="cell"></div>`;
       if (x.t==='o') return `<div class="cell m${i}">#${esc(x.u.order)}<small>${esc(x.u.mask)}</small></div>`;
       if (x.t==='pure') return `<div class="cell"><div class="pill pure">#${esc(x.u.order)}<br>純年曆</div></div>`;
@@ -166,7 +177,9 @@ function renderBoard(ch, b, stock){
     }).join('') + `</div>`;
   }
   if (unplaced.length) html += `<div class="warn">還有 ${unplaced.length} 本的卡不夠分（${unplaced.map(u=>'#'+u.order).join('、')}），張數待補。</div>`;
-  if (purePending.length) html += `<div class="warn">單買純年曆 ${purePending.map(u=>'#'+esc(u.order)).join('、')} 這個通路沒有剩卡。</div>`;
+  html += r.mode==='auto'
+    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算，到貨後依實際張數更新。</div>`
+    : `<div class="note" style="font-size:12px">已依到貨張數分配（${r.stock.join('／')}）。</div>`;
   return html + `</div>`;
 }
 
@@ -192,10 +205,13 @@ const editing = () => location.hash === '#edit';
 const activeStock = () => (editing() && localStock) ? localStock : STOCK;
 
 function drawView(){
-  const info = build(FEED);
-  const b = info.byChannel[current];
-  let html = renderBoard(current, b, activeStock()[current]) + renderQueue(current, b);
-  if (b.pure.length) html += `<div class="panel"><h3>單買純年曆（無特典）</h3><p class="rule">${b.pure.map(p=>'#'+esc(p.order)+' 純年曆').join('　')}</p></div>`;
+  const all = computeAll();
+  const r = all.res[current];
+  let html = renderBoard(current, r) + renderQueue(current, r.b);
+  if (all.pureAll.length){
+    const items = all.pureAll.map(p=>`#${esc(p.order)} 純年曆${p.where ? '（領 '+esc(p.where)+' 剩卡）' : '（目前沒有剩卡）'}`).join('<br>');
+    html += `<div class="panel"><h3>單買純年曆（無特典）</h3><p class="rule">${items}</p></div>`;
+  }
   document.getElementById('view').innerHTML = html;
 }
 function render(){
