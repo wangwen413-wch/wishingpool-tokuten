@@ -171,7 +171,7 @@ function renderBoard(ch, r){
     html += `<div class="row">` + cols.map((c,i)=>{
       const x = c[k];
       if (!x) return `<div class="cell"></div>`;
-      if (x.t==='o') return `<div class="cell m${i}">#${esc(x.u.order)}<small>${esc(x.u.mask)}</small></div>`;
+      if (x.t==='o') return `<div class="cell m${i}">#${esc(x.u.order)}${x.u.mask?`<small>${esc(x.u.mask)}</small>`:''}</div>`;
       if (x.t==='pure') return `<div class="cell"><div class="pill pure">#${esc(x.u.order)}<br>純年曆</div></div>`;
       return `<div class="cell"><div class="pill seek">誠徵</div></div>`;
     }).join('') + `</div>`;
@@ -193,7 +193,7 @@ function renderQueue(ch, b){
   });
   const body = rows.map((r,i)=>{
     const chips = r.u.pref.map(m=>`<span class="chip m${m}">${MEMBERS[m].k}</span>`).join('<span class="arrow">›</span>');
-    return `<tr><td class="n">${i+1}</td><td class="n">#${esc(r.u.order)}</td><td>${esc(r.u.mask)}</td><td class="n">${r.n} 本</td><td><div class="chips">${chips}</div></td></tr>`;
+    return `<tr><td class="n">${i+1}</td><td class="n">#${esc(r.u.order)}</td><td>${esc(r.u.mask||'—')}</td><td class="n">${r.n} 本</td><td><div class="chips">${chips}</div></td></tr>`;
   }).join('');
   return `<div class="panel"><h3>排隊順位・${esc(ch)}</h3><table><thead><tr><th>#</th><th>訂單</th><th>姓名</th><th>本數</th><th>志願順序</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
@@ -252,10 +252,21 @@ async function getJSON(url, ms=8000){
   try { const r = await fetch(url, {signal:c.signal, cache:'no-store'}); if (!r.ok) throw new Error(r.status); return await r.json(); }
   finally { clearTimeout(id); }
 }
+const MCHAR = {'斗':0,'耀':1,'燮':1,'光':2,'雲':3,'東':3};
+function mergeManual(list){
+  const units = FEED.units.filter(u=>!u.manual);
+  for (const m of (list||[])) for (const x of (m.units||[])){
+    const first = MCHAR[x.first];
+    const pref = (first===undefined ? [] : [first]).concat([0,1,2,3].filter(i=>i!==first));
+    units.push({channel:x.channel, order:m.order, mask:m.mask||'', rank:m.rank||999, created:'2099-01-01T00:00:00+00:00', pref, manual:true});
+  }
+  FEED.units = units;
+}
 async function load(){
   try { FEED = await getJSON(FEED_URL); }
   catch(e){ try { FEED = await getJSON('data/feed.json'); } catch(e2){ document.getElementById('updated').textContent = '暫時讀不到資料，請稍後再試'; } }
   try { STOCK = await getJSON('data/stock.json'); } catch(e){ STOCK = {}; }
+  try { mergeManual(await getJSON('data/manual.json')); } catch(e){}
   render();
 }
 document.body.classList.toggle('is-edit', editing());
