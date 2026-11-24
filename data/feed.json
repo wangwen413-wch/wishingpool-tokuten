@@ -128,5 +128,79 @@
    "order": "5429",
    "created": "2026-11-24T13:54:24+00:00"
   }
+ ],
+ "ranking": [
+  {
+   "rank": 1,
+   "mask": "陳O均",
+   "count": 2,
+   "orders": [
+    "5423"
+   ]
+  },
+  {
+   "rank": 2,
+   "mask": "張O瑄",
+   "count": 2,
+   "orders": [
+    "5431"
+   ]
+  },
+  {
+   "rank": 3,
+   "mask": "張O菁",
+   "count": 1,
+   "orders": [
+    "5424"
+   ]
+  },
+  {
+   "rank": 4,
+   "mask": "王O方",
+   "count": 1,
+   "orders": [
+    "5427"
+   ]
+  },
+  {
+   "rank": 5,
+   "mask": "蔡O汶",
+   "count": 1,
+   "orders": [
+    "5429"
+   ]
+  },
+  {
+   "rank": 6,
+   "mask": "姚O妤",
+   "count": 1,
+   "orders": [
+    "5426"
+   ]
+  },
+  {
+   "rank": 7,
+   "mask": "林O珊",
+   "count": 1,
+   "orders": [
+    "5425"
+   ]
+  },
+  {
+   "rank": 8,
+   "mask": "陳O蓉",
+   "count": 1,
+   "orders": [
+    "5430"
+   ]
+  },
+  {
+   "rank": 9,
+   "mask": "黃O雯",
+   "count": 1,
+   "orders": [
+    "5432"
+   ]
+  }
  ]
 }

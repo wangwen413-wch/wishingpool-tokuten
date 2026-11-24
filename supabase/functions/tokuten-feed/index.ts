@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
   if (error) return new Response(JSON.stringify({ error: "unavailable" }), { status: 500, headers: cors });
 
   const cust: Record<string, { name: string; cal: number; amount: number; first: number }> = {};
+  const ordersByKey: Record<string, Set<string>> = {};
   const lines: { key: string; order: string; created: string; qty: number; channel: string | null; pref: number[] }[] = [];
   for (const r of data ?? []) {
     const key = String(r.customer_id ?? r.customer_name);
@@ -46,6 +47,7 @@ Deno.serve(async (req) => {
       c.first = Math.min(c.first, +new Date(r.created_at));
       const cm = ln.match(/(HL SHOP|OFFIK|SOUNDWAVE)\s*預購特典|APPLE MUSIC\s*(預購|線上|線下)/);
       const channel = cm ? (cm[1] ?? "APPLE MUSIC " + cm[2]) : (/無特典/.test(ln) ? null : "?");
+      (ordersByKey[key] ??= new Set()).add(order);
       lines.push({ key, order, created: r.created_at, qty, channel, pref: parsePref(ln) });
     }
   }
@@ -54,6 +56,9 @@ Deno.serve(async (req) => {
     return B.cal - A.cal || B.amount - A.amount || A.first - B.first;
   });
   const rank = Object.fromEntries(ranked.map((k, i) => [k, i + 1]));
+  // 排行榜：只輸出遮名、本數、訂單編號（不含金額）
+  const ranking = ranked.filter((k) => cust[k].cal > 0)
+    .map((k, i) => ({ rank: i + 1, mask: mask(cust[k].name), count: cust[k].cal, orders: [...ordersByKey[k]] }));
 
   const units: unknown[] = [];
   const pure: unknown[] = [];
@@ -65,5 +70,5 @@ Deno.serve(async (req) => {
     }
   }
   const updated = new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
-  return new Response(JSON.stringify({ updated, units, pure }), { headers: cors });
+  return new Response(JSON.stringify({ updated, units, pure, ranking }), { headers: cors });
 });

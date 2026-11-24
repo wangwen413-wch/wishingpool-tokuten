@@ -69,6 +69,7 @@
 
   <div class="tabs" role="tablist" id="tabs"></div>
   <div id="view"></div>
+  <div id="ranking"></div>
 
   <div class="panel">
     <h3>怎麼排？</h3>
@@ -204,6 +205,23 @@ try { const s = localStorage.getItem('wip-stock'); if (s) localStock = JSON.pars
 const editing = () => location.hash === '#edit';
 const activeStock = () => (editing() && localStock) ? localStock : STOCK;
 
+
+let showAllRank = false;
+function renderRanking(){
+  const list = (FEED.ranking || []).map(r=>({mask:r.mask, count:r.count, orders:r.orders, rank:r.rank}));
+  // 手動名單（例如香港包）也算進去：本數 = 他預訂的張數
+  const man = {};
+  FEED.units.filter(u=>u.manual).forEach(u=>{ (man[u.order] = man[u.order] || {mask:u.mask||('#'+u.order), count:0, orders:[u.order], rank:u.rank||999}).count++; });
+  Object.values(man).forEach(m=>list.push(m));
+  if (!list.length) return '';
+  list.sort((a,b)=> b.count-a.count || a.rank-b.rank);
+  const medal = ['🥇','🥈','🥉'];
+  const shown = showAllRank ? list : list.slice(0,10);
+  const rows = shown.map((r,i)=>`<tr><td class="n">${medal[i]||i+1}</td><td>${esc(r.mask)}</td><td class="n">${r.orders.map(o=>'#'+esc(o)).join(' ')}</td><td class="n"><b>${r.count}</b> 本</td></tr>`).join('');
+  const more = list.length>10 ? `<p style="text-align:center;margin:8px 0 0"><button class="btn" id="rankToggle">${showAllRank?'收起':'看全部 '+list.length+' 位'}</button></p>` : '';
+  return `<div class="panel"><h3>🏆 年曆購買排行</h3><table><thead><tr><th>名次</th><th>姓名</th><th>訂單</th><th>購買</th></tr></thead><tbody>${rows}</tbody></table>${more}<p class="rule" style="margin-top:8px">買越多排越前面；本數一樣時，比年曆團總金額，再比誰先下單。</p></div>`;
+}
+
 function drawView(){
   const all = computeAll();
   const r = all.res[current];
@@ -213,6 +231,7 @@ function drawView(){
     html += `<div class="panel"><h3>單買純年曆（無特典）</h3><p class="rule">${items}</p></div>`;
   }
   document.getElementById('view').innerHTML = html;
+  document.getElementById('ranking').innerHTML = renderRanking();
 }
 function render(){
   const info = build(FEED);
@@ -231,6 +250,7 @@ function render(){
 
 document.addEventListener('click', e=>{
   const t = e.target.closest('.tab'); if (t){ current = t.dataset.ch; render(); return; }
+  if (e.target.id==='rankToggle'){ showAllRank = !showAllRank; drawView(); return; }
   if (e.target.id==='demoBtn'){ localStock = {}; CHANNELS.forEach(ch=>localStock[ch]=[3,3,3,3]); saveStock(); render(); }
   if (e.target.id==='clearBtn'){ localStock = null; saveStock(); render(); }
 });
