@@ -206,20 +206,12 @@ const editing = () => location.hash === '#edit';
 const activeStock = () => (editing() && localStock) ? localStock : STOCK;
 
 
-let showAllRank = false;
 function renderRanking(){
-  const list = (FEED.ranking || []).map(r=>({mask:r.mask, count:r.count, orders:r.orders, rank:r.rank}));
-  // 手動名單（例如香港包）也算進去：本數 = 他預訂的張數
-  const man = {};
-  FEED.units.filter(u=>u.manual).forEach(u=>{ (man[u.order] = man[u.order] || {mask:u.mask||('#'+u.order), count:0, orders:[u.order], rank:u.rank||999}).count++; });
-  Object.values(man).forEach(m=>list.push(m));
+  const list = (FEED.ranking || []).slice(0,3);
   if (!list.length) return '';
-  list.sort((a,b)=> b.count-a.count || a.rank-b.rank);
   const medal = ['🥇','🥈','🥉'];
-  const shown = showAllRank ? list : list.slice(0,10);
-  const rows = shown.map((r,i)=>`<tr><td class="n">${medal[i]||i+1}</td><td>${esc(r.mask)}</td><td class="n">${r.orders.map(o=>'#'+esc(o)).join(' ')}</td><td class="n"><b>${r.count}</b> 本</td></tr>`).join('');
-  const more = list.length>10 ? `<p style="text-align:center;margin:8px 0 0"><button class="btn" id="rankToggle">${showAllRank?'收起':'看全部 '+list.length+' 位'}</button></p>` : '';
-  return `<div class="panel"><h3>🏆 年曆購買排行</h3><table><thead><tr><th>名次</th><th>姓名</th><th>訂單</th><th>購買</th></tr></thead><tbody>${rows}</tbody></table>${more}<p class="rule" style="margin-top:8px">買越多排越前面；本數一樣時，比年曆團總金額，再比誰先下單。</p></div>`;
+  const rows = list.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:${i?'1px solid var(--line)':'0'}"><span style="font-size:24px">${medal[i]}</span><b style="font-size:17px">${esc(r.mask)}</b></div>`).join('');
+  return `<div class="panel"><h3>🕳️ 荷包破洞榜</h3>${rows}<p class="rule" style="margin-top:8px">年曆團消費最多的前三名（金額不公開）。</p></div>`;
 }
 
 function drawView(){
@@ -250,7 +242,6 @@ function render(){
 
 document.addEventListener('click', e=>{
   const t = e.target.closest('.tab'); if (t){ current = t.dataset.ch; render(); return; }
-  if (e.target.id==='rankToggle'){ showAllRank = !showAllRank; drawView(); return; }
   if (e.target.id==='demoBtn'){ localStock = {}; CHANNELS.forEach(ch=>localStock[ch]=[3,3,3,3]); saveStock(); render(); }
   if (e.target.id==='clearBtn'){ localStock = null; saveStock(); render(); }
 });
