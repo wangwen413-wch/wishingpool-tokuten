@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HIGHLIGHT 2027 年曆團｜特典卡分配</title>
+<style>
+  :root{
+    --bg:#f6f4f1; --ink:#1d1d1f; --mute:#6b6b70; --line:#e3dfd9; --card:#fff;
+    --dou:#1a1ae6; --yo:#f59a23; --gi:#0a8f3c; --un:#7b2d8e; --pink:#e6007e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 12px 48px}
+  h1{font-size:20px;margin:8px 0 2px}
+  .sub{color:var(--mute);font-size:13px;margin:0 0 14px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+  .tab{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;color:var(--ink)}
+  .tab[aria-selected="true"]{background:#000;color:#fff;border-color:#000}
+  .tab small{opacity:.7;margin-left:4px}
+
+  .board{background:#fff;border:3px solid #2a1f1a;margin-bottom:14px}
+  .board h2{margin:0;background:#000;color:#fff;text-align:center;font-size:clamp(20px,6vw,30px);letter-spacing:1px;padding:10px 6px}
+  .heads,.row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+  .heads{padding:10px 6px 4px}
+  .mh{text-align:center;font-weight:700;font-size:clamp(12px,3.4vw,15px)}
+  .mh .dot{display:block;font-size:20px;line-height:1.1}
+  .row{padding:8px 6px;border-top:1px solid #bdbdbd}
+  .row:first-of-type{border-top:2px solid #8a8a8a}
+  .cell{text-align:center;font-weight:800;font-size:clamp(13px,4.2vw,20px);line-height:1.25;padding:4px 2px;min-width:0}
+  .cell small{display:block;font-weight:800}
+  .m0{color:var(--dou)} .m1{color:var(--yo)} .m2{color:var(--gi)} .m3{color:var(--un)}
+  .pill{margin:2px 4px;padding:6px 2px;color:#fff;border-radius:2px;font-weight:800}
+  .pill.pure{background:var(--pink)}
+  .pill.seek{background:#666}
+  .pill.wait{background:#fff;color:#999;border:1px dashed #bbb}
+  .empty{padding:22px 14px;text-align:center;color:var(--mute);font-size:14px;border-top:1px solid #bdbdbd}
+  .warn{background:#fff4e5;color:#8a4b00;font-size:13px;padding:8px 12px;border-top:1px solid #f0d9b5}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+  .panel h3{margin:0 0 8px;font-size:15px}
+  .rule{font-size:13px;color:var(--mute);margin:0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{font-size:12px;color:var(--mute);font-weight:600}
+  td.n{white-space:nowrap}
+  .chips{display:flex;gap:3px;flex-wrap:wrap}
+  .chip{width:22px;height:22px;border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+  .chip.m0{background:var(--dou);color:#fff}.chip.m1{background:var(--yo);color:#fff}.chip.m2{background:var(--gi);color:#fff}.chip.m3{background:var(--un);color:#fff}
+  .chips .arrow{color:#aaa;font-size:11px;align-self:center}
+
+  .edit{display:none}
+  body.is-edit .edit{display:block}
+  .edit label{display:inline-flex;align-items:center;gap:4px;font-size:14px;margin:4px 10px 4px 0}
+  .edit input{width:56px;padding:5px;font-size:15px;border:1px solid var(--line);border-radius:6px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .foot{color:var(--mute);font-size:12px;text-align:center;margin-top:18px}
+
+  .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:0 8px 6px}
+  .cards img{width:100%;aspect-ratio:3/4.5;object-fit:cover;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.18);display:block}
+  .caption{text-align:center;color:#666;font-size:12px;padding:0 8px 8px}
+  .note{padding:12px 14px;text-align:center;color:var(--mute);font-size:14px;border-top:1px solid #bdbdbd}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🫧 HIGHLIGHT 2027 年曆團｜特典卡分配</h1>
+  <p class="sub">Wish_Ing_Pool ・ <span id="updated">讀取中…</span></p>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="view"></div>
+
+  <div class="panel">
+    <h3>怎麼排？</h3>
+    <p class="rule">① 年曆買越多越優先 → ② 年曆團總金額越高越優先 → ③ 同樣的比誰先下單。每本年曆一張成員卡，依下單時填的志願順序，從排第一的人開始給。單買純年曆的人，領各通路剩下的卡；沒人領的標「誠徵」。</p>
+  </div>
+
+  <div class="panel edit" id="editPanel">
+    <h3>到貨張數試算（只有你看得到，網址後面加 #edit）</h3>
+    <div id="stockForm"></div>
+    <p class="rule" style="margin-top:8px">輸入各通路實際拿到的張數，上方分配表會即時重算，只在你的手機上生效，截圖就能貼限動。要讓大家都看到，請把張數填進網站的 data/stock.json。</p>
+    <button class="btn" id="demoBtn">套入範例（每位成員各 3 張）</button>
+    <button class="btn" id="clearBtn">清空</button>
+  </div>
+
+  <p class="foot">姓名以「姓O名」顯示。有疑問請私訊 IG @wishingpool89。</p>
+</div>
+
+<script>
+const MEMBERS = [
+  {k:'斗', name:'尹斗俊', heart:'💙'},
+  {k:'耀', name:'梁耀燮', heart:'💛'},
+  {k:'光', name:'李起光', heart:'💚'},
+  {k:'雲', name:'孫東雲', heart:'💜'}
+];
+const CHANNELS = ['HL SHOP','APPLE MUSIC 預購','APPLE MUSIC 線上','APPLE MUSIC 線下','OFFIK','SOUNDWAVE'];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const FEED_URL = 'https://ukcvobwtmrgnmrxjpvri.supabase.co/functions/v1/tokuten-feed';
+const SLUG = {'HL SHOP':'hlshop','APPLE MUSIC 預購':'applemusic-preorder','APPLE MUSIC 線上':'applemusic-online','APPLE MUSIC 線下':'applemusic-offline','OFFIK':'offik','SOUNDWAVE':'soundwave'};
+const CAPTION = {
+  'HL SHOP':'HIGHLIGHT 未公開自拍小卡 1張（4張中隨機1張）',
+  'APPLE MUSIC 預購':'APPLE MUSIC 獨家未公開相片卡 1張（4張中隨機1張）',
+  'APPLE MUSIC 線上':'簽售當天的衣著打扮自拍小卡 1張（4張中隨機1張）・線上簽售特典',
+  'APPLE MUSIC 線下':'簽售當天的衣著打扮自拍小卡 1張（4張中隨機1張）・線下簽售特典',
+  'OFFIK':'OFFIK 獨家未公開相片卡 1張（4張中隨機1張）',
+  'SOUNDWAVE':'SOUNDWAVE 獨家未公開相片卡 1張（4張中隨機1張）'
+};
+let FEED = {updated:'', units:[], pure:[]};
+let STOCK = {};
+
+// feed 內每一筆 unit = 一本含特典年曆；rank 已由伺服器算好（數量→金額→下單時間）
+function build(feed){
+  const byChannel = {};
+  for (const ch of CHANNELS){
+    const units = feed.units.filter(u=>u.channel===ch)
+      .sort((a,b)=> a.rank-b.rank || new Date(a.created)-new Date(b.created));
+    byChannel[ch] = {units, pure: feed.pure.slice().sort((a,b)=>new Date(a.created)-new Date(b.created))};
+  }
+  return {byChannel};
+}
+
+function allocate(units, pureAll, stock){
+  const left = stock.slice();
+  const cols = [[],[],[],[]];
+  const unplaced = [];
+  for (const u of units){
+    const pick = u.pref.find(m => left[m] > 0);
+    if (pick === undefined) { unplaced.push(u); continue; }
+    left[pick]--; cols[pick].push({t:'o', u});
+  }
+  // 剩下的卡：純年曆依序領，其餘誠徵
+  const pure = pureAll.slice();
+  for (let m=0;m<4;m++){
+    while (left[m] > 0){
+      left[m]--;
+      cols[m].push(pure.length ? {t:'pure', u:pure.shift()} : {t:'seek'});
+    }
+  }
+  return {cols, unplaced, purePending: pure};
+}
+
+
+function renderBoard(ch, b, stock){
+  const total = stock ? stock.reduce((a,x)=>a+x,0) : 0;
+  const slug = SLUG[ch];
+  let html = `<div class="board"><h2>${esc(ch)}</h2><div class="heads">` +
+    MEMBERS.map((m,i)=>`<div class="mh m${i}"><span class="dot">${m.heart}</span>${m.name}</div>`).join('') + `</div>` +
+    `<div class="cards">` + MEMBERS.map((m,i)=>`<img src="images/${slug}-${i}.webp" alt="${esc(ch)} ${m.name}" loading="lazy">`).join('') + `</div>` +
+    `<div class="caption">${esc(CAPTION[ch])}</div>`;
+  if (!b.units.length && !total){
+    return html + `<div class="note">目前還沒有人下單這個通路</div></div>`;
+  }
+  if (!total){
+    return html + `<div class="note">到貨後公布分配結果<br>目前 ${b.units.length} 本含特典・${b.pure.length} 本單買純年曆</div></div>`;
+  }
+  const {cols, unplaced, purePending} = allocate(b.units, b.pure, stock);
+  const n = Math.max(0, ...cols.map(c=>c.length));
+  for (let r=0;r<n;r++){
+    html += `<div class="row">` + cols.map((c,i)=>{
+      const x = c[r];
+      if (!x) return `<div class="cell"></div>`;
+      if (x.t==='o') return `<div class="cell m${i}">#${esc(x.u.order)}<small>${esc(x.u.mask)}</small></div>`;
+      if (x.t==='pure') return `<div class="cell"><div class="pill pure">#${esc(x.u.order)}<br>純年曆</div></div>`;
+      return `<div class="cell"><div class="pill seek">誠徵</div></div>`;
+    }).join('') + `</div>`;
+  }
+  if (unplaced.length) html += `<div class="warn">還有 ${unplaced.length} 本的卡不夠分（${unplaced.map(u=>'#'+u.order).join('、')}），張數待補。</div>`;
+  if (purePending.length) html += `<div class="warn">單買純年曆 ${purePending.map(u=>'#'+esc(u.order)).join('、')} 這個通路沒有剩卡。</div>`;
+  return html + `</div>`;
+}
+
+function renderQueue(ch, b){
+  if (!b.units.length) return `<div class="panel"><h3>排隊順位・${esc(ch)}</h3><p class="rule">目前還沒有人下單。</p></div>`;
+  const seen = {}, rows = [];
+  b.units.forEach(u=>{
+    const key = u.order + '|' + u.mask;
+    if (seen[key]) { seen[key].n++; return; }
+    seen[key] = {u, n:1}; rows.push(seen[key]);
+  });
+  const body = rows.map((r,i)=>{
+    const chips = r.u.pref.map(m=>`<span class="chip m${m}">${MEMBERS[m].k}</span>`).join('<span class="arrow">›</span>');
+    return `<tr><td class="n">${i+1}</td><td class="n">#${esc(r.u.order)}</td><td>${esc(r.u.mask)}</td><td class="n">${r.n} 本</td><td><div class="chips">${chips}</div></td></tr>`;
+  }).join('');
+  return `<div class="panel"><h3>排隊順位・${esc(ch)}</h3><table><thead><tr><th>#</th><th>訂單</th><th>姓名</th><th>本數</th><th>志願順序</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+let current = CHANNELS[0];
+let localStock = null;     // #edit 試算用，只存在這支手機
+try { const s = localStorage.getItem('wip-stock'); if (s) localStock = JSON.parse(s); } catch(e){}
+const editing = () => location.hash === '#edit';
+const activeStock = () => (editing() && localStock) ? localStock : STOCK;
+
+function drawView(){
+  const info = build(FEED);
+  const b = info.byChannel[current];
+  let html = renderBoard(current, b, activeStock()[current]) + renderQueue(current, b);
+  if (b.pure.length) html += `<div class="panel"><h3>單買純年曆（無特典）</h3><p class="rule">${b.pure.map(p=>'#'+esc(p.order)+' 純年曆').join('　')}</p></div>`;
+  document.getElementById('view').innerHTML = html;
+}
+function render(){
+  const info = build(FEED);
+  document.getElementById('updated').textContent = FEED.updated ? '資料更新：' + FEED.updated : '';
+  document.getElementById('tabs').innerHTML = CHANNELS.map(ch=>{
+    const n = info.byChannel[ch].units.length;
+    return `<button class="tab" role="tab" aria-selected="${ch===current}" data-ch="${esc(ch)}">${esc(ch)}<small>${n}</small></button>`;
+  }).join('');
+  drawView();
+  const s0 = localStock || {};
+  document.getElementById('stockForm').innerHTML = CHANNELS.map(ch=>{
+    const s = s0[ch] || ['','','',''];
+    return `<div><b style="font-size:13px">${esc(ch)}</b><br>` + MEMBERS.map((m,i)=>`<label>${m.heart}<input type="number" min="0" inputmode="numeric" data-ch="${esc(ch)}" data-i="${i}" value="${s[i]===''?'':s[i]}"></label>`).join('') + `</div>`;
+  }).join('<br>');
+}
+
+document.addEventListener('click', e=>{
+  const t = e.target.closest('.tab'); if (t){ current = t.dataset.ch; render(); return; }
+  if (e.target.id==='demoBtn'){ localStock = {}; CHANNELS.forEach(ch=>localStock[ch]=[3,3,3,3]); saveStock(); render(); }
+  if (e.target.id==='clearBtn'){ localStock = null; saveStock(); render(); }
+});
+document.addEventListener('input', e=>{
+  const el = e.target; if (!el.dataset || el.dataset.i===undefined) return;
+  localStock = localStock || {};
+  const ch = el.dataset.ch, i = +el.dataset.i;
+  const s = localStock[ch] || [0,0,0,0];
+  s[i] = Math.max(0, parseInt(el.value || '0', 10) || 0);
+  localStock[ch] = s; saveStock();
+  drawView();
+});
+function saveStock(){ try{ if (localStock) localStorage.setItem('wip-stock', JSON.stringify(localStock)); else localStorage.removeItem('wip-stock'); }catch(e){} }
+function applyHash(){ document.body.classList.toggle('is-edit', editing()); drawView(); }
+window.addEventListener('hashchange', applyHash);
+
+async function getJSON(url, ms=8000){
+  const c = new AbortController(); const id = setTimeout(()=>c.abort(), ms);
+  try { const r = await fetch(url, {signal:c.signal, cache:'no-store'}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(id); }
+}
+async function load(){
+  try { FEED = await getJSON(FEED_URL); }
+  catch(e){ try { FEED = await getJSON('data/feed.json'); } catch(e2){ document.getElementById('updated').textContent = '暫時讀不到資料，請稍後再試'; } }
+  try { STOCK = await getJSON('data/stock.json'); } catch(e){ STOCK = {}; }
+  render();
+}
+document.body.classList.toggle('is-edit', editing());
+render(); load(); setInterval(load, 60000);
+</script>
+</body>
+</html>
