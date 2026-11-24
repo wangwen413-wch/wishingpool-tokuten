@@ -211,7 +211,7 @@ function renderRanking(){
   if (!list.length) return '';
   const medal = ['🥇','🥈','🥉'];
   const rows = list.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:${i?'1px solid var(--line)':'0'}"><span style="font-size:24px">${medal[i]}</span><b style="font-size:17px">${esc(r.mask)}</b></div>`).join('');
-  return `<div class="panel"><h3>🕳️ 荷包破洞榜</h3>${rows}<p class="rule" style="margin-top:8px">年曆團消費最多的前三名（金額不公開）。</p></div>`;
+  return `<div class="panel"><h3>🫧 荷包泡沒排行榜</h3>${rows}<p class="rule" style="margin-top:8px">年曆團消費最多的前三名（金額不公開）。</p></div>`;
 }
 
 function drawView(){
