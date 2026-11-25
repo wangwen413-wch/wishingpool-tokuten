@@ -95,6 +95,7 @@ const MEMBERS = [
   {k:'光', name:'李起光', heart:'💚'},
   {k:'雲', name:'孫東雲', heart:'💜'}
 ];
+const MCHAR = {'斗':0,'耀':1,'燮':1,'光':2,'雲':3,'東':3};
 const CHANNELS = ['HL SHOP','APPLE MUSIC 預購','OFFIK','SOUNDWAVE','APPLE MUSIC 線上','APPLE MUSIC 線下'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -122,7 +123,7 @@ function build(feed){
   return {byChannel};
 }
 
-function allocate(units, pureAll, stock, where){
+function allocate(units, pureAll, stock, where, firstMember){
   const left = stock.slice();
   const cols = [[],[],[],[]];
   const unplaced = [];
@@ -133,7 +134,8 @@ function allocate(units, pureAll, stock, where){
   }
   // 剩下的卡：純年曆依序領，其餘誠徵
   const pure = pureAll;   // 共用佇列：同一位純年曆只會領到一張
-  for (let m=0;m<4;m++){
+  const order = (firstMember===undefined || firstMember===null) ? [0,1,2,3] : [firstMember].concat([0,1,2,3].filter(m=>m!==firstMember));
+  for (const m of order){
     while (left[m] > 0){
       left[m]--;
       if (pure.length){ const p = pure.shift(); p.where = where; cols[m].push({t:'pure', u:p}); }
@@ -144,18 +146,25 @@ function allocate(units, pureAll, stock, where){
 }
 
 
+let CFG = {};
 function computeAll(){
   const info = build(FEED);
   const pureQ = (FEED.pure || []).slice().sort((x,y)=>new Date(x.created)-new Date(y.created)).map(p=>({...p}));
   const pureAll = pureQ.slice();
+  const pc = CFG.pureCard;                     // 單買純年曆指定領哪個通路的哪位成員
+  const pcMember = pc ? MCHAR[pc.member] : undefined;
   const res = {};
   for (const ch of CHANNELS){
     const b = info.byChannel[ch];
     const given = activeStock()[ch];
     const hasGiven = given && given.reduce((a,x)=>a+x,0) > 0;
     const S = Math.ceil(b.units.length / 4);
-    const stock = hasGiven ? given : [S,S,S,S];
-    res[ch] = {b, mode: hasGiven ? 'real' : 'auto', S, stock, out: b.units.length || hasGiven ? allocate(b.units, pureQ, stock, ch) : null};
+    const stock = hasGiven ? given.slice() : [S,S,S,S];
+    const isPure = pc && pc.channel===ch && pcMember!==undefined;
+    if (isPure && !hasGiven) stock[pcMember] += pureQ.length;   // 預排時，替純年曆多備他們的卡
+    const q = (!pc || isPure) ? pureQ : [];
+    res[ch] = {b, mode: hasGiven ? 'real' : 'auto', S, stock, isPure,
+      out: (b.units.length || hasGiven || (isPure && pureQ.length)) ? allocate(b.units, q, stock, ch, isPure ? pcMember : null) : null};
   }
   return {info, res, pureAll, pureLeft: pureQ};
 }
@@ -180,7 +189,7 @@ function renderBoard(ch, r){
   }
   if (unplaced.length) html += `<div class="warn">還有 ${unplaced.length} 本的卡不夠分（${unplaced.map(u=>'#'+u.order).join('、')}），張數待補。</div>`;
   html += r.mode==='auto'
-    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算，到貨後依實際張數更新。</div>`
+    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算，到貨後依實際張數更新。${r.isPure?'單買純年曆領這個通路的 '+esc(CFG.pureCard.member==='雲'?'孫東雲':CFG.pureCard.member)+' 卡。':''}</div>`
     : `<div class="note" style="font-size:12px">已依到貨張數分配（${r.stock.join('／')}）。</div>`;
   return html + `</div>`;
 }
@@ -264,7 +273,6 @@ async function getJSON(url, ms=8000){
   try { const r = await fetch(url, {signal:c.signal, cache:'no-store'}); if (!r.ok) throw new Error(r.status); return await r.json(); }
   finally { clearTimeout(id); }
 }
-const MCHAR = {'斗':0,'耀':1,'燮':1,'光':2,'雲':3,'東':3};
 function mergeManual(list){
   const units = FEED.units.filter(u=>!u.manual);
   for (const m of (list||[])) for (const x of (m.units||[])){
@@ -278,6 +286,7 @@ async function load(){
   try { FEED = await getJSON(FEED_URL); }
   catch(e){ try { FEED = await getJSON('data/feed.json'); } catch(e2){ document.getElementById('updated').textContent = '暫時讀不到資料，請稍後再試'; } }
   try { STOCK = await getJSON('data/stock.json'); } catch(e){ STOCK = {}; }
+  try { CFG = await getJSON('data/config.json'); } catch(e){ CFG = {}; }
   try { mergeManual(await getJSON('data/manual.json')); } catch(e){}
   render();
 }
