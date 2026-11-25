@@ -190,7 +190,7 @@ function renderBoard(ch, r){
   }
   if (unplaced.length) html += `<div class="warn">還有 ${unplaced.length} 本的卡不夠分（${unplaced.map(u=>'#'+u.order).join('、')}），張數待補。</div>`;
   html += r.mode==='auto'
-    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算（備到每人都拿得到第一志願），到貨後依實際張數更新。${r.isPure?'單買純年曆領這個通路的 '+esc(CFG.pureCard.member==='雲'?'孫東雲':CFG.pureCard.member)+' 卡。':''}</div>`
+    ? `<div class="note" style="font-size:12px"><b>一本年曆，一張卡 🫧</b><br>目前的分配圖是「理想狀況」。如果跟團人數不如預期，或「誠徵」的卡沒有徵到，排在後面的跟團 Light 會依序改補其他成員的卡。${r.isPure?'單買純年曆領這個通路的 '+esc(CFG.pureCard.member==='雲'?'孫東雲':CFG.pureCard.member)+' 卡。':''}</div>`
     : `<div class="note" style="font-size:12px">已依到貨張數分配（${r.stock.join('／')}）。</div>`;
   return html + `</div>`;
 }
