@@ -5,8 +5,18 @@
     "note": "香港 @seizethe_bright_light，口頭預訂",
     "rank": 999,
     "units": [
-      {"channel": "OFFIK", "first": "斗"},
-      {"channel": "HL SHOP", "first": "耀"}
+      {
+        "channel": "OFFIK",
+        "first": "斗"
+      },
+      {
+        "channel": "HL SHOP",
+        "first": "耀"
+      },
+      {
+        "channel": "HL SHOP",
+        "first": "光"
+      }
     ]
   }
 ]
