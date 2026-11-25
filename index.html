@@ -158,10 +158,11 @@ function computeAll(){
     const b = info.byChannel[ch];
     const given = activeStock()[ch];
     const hasGiven = given && given.reduce((a,x)=>a+x,0) > 0;
-    const S = Math.ceil(b.units.length / 4);
+    const demand = [0,0,0,0]; b.units.forEach(u=>demand[u.pref[0]]++);
+    const S = Math.max(Math.ceil(b.units.length / 4), ...demand);   // 預排：備到每個人都拿得到第一志願
     const stock = hasGiven ? given.slice() : [S,S,S,S];
     const isPure = pc && pc.channel===ch && pcMember!==undefined;
-    if (isPure && !hasGiven) stock[pcMember] += pureQ.length;   // 預排時，替純年曆多備他們的卡
+    if (isPure && !hasGiven) stock[pcMember] = Math.max(stock[pcMember], demand[pcMember] + pureQ.length);   // 預排時，替純年曆多備他們的卡
     const q = (!pc || isPure) ? pureQ : [];
     res[ch] = {b, mode: hasGiven ? 'real' : 'auto', S, stock, isPure,
       out: (b.units.length || hasGiven || (isPure && pureQ.length)) ? allocate(b.units, q, stock, ch, isPure ? pcMember : null) : null};
@@ -189,7 +190,7 @@ function renderBoard(ch, r){
   }
   if (unplaced.length) html += `<div class="warn">還有 ${unplaced.length} 本的卡不夠分（${unplaced.map(u=>'#'+u.order).join('、')}），張數待補。</div>`;
   html += r.mode==='auto'
-    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算，到貨後依實際張數更新。${r.isPure?'單買純年曆領這個通路的 '+esc(CFG.pureCard.member==='雲'?'孫東雲':CFG.pureCard.member)+' 卡。':''}</div>`
+    ? `<div class="note" style="font-size:12px">預先分配：先以每位成員 ${r.S} 張估算（備到每人都拿得到第一志願），到貨後依實際張數更新。${r.isPure?'單買純年曆領這個通路的 '+esc(CFG.pureCard.member==='雲'?'孫東雲':CFG.pureCard.member)+' 卡。':''}</div>`
     : `<div class="note" style="font-size:12px">已依到貨張數分配（${r.stock.join('／')}）。</div>`;
   return html + `</div>`;
 }
