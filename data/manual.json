@@ -18,5 +18,21 @@
         "first": "光"
       }
     ]
+  },
+  {
+    "order": "SWS",
+    "mask": "香港包",
+    "note": "香港，口頭預訂",
+    "rank": 999,
+    "units": [
+      {
+        "channel": "HL SHOP",
+        "first": "光"
+      },
+      {
+        "channel": "SOUNDWAVE",
+        "first": "光"
+      }
+    ]
   }
 ]
