@@ -34,5 +34,17 @@
         "first": "光"
       }
     ]
+  },
+  {
+    "order": "WCH",
+    "mask": "本人包",
+    "note": "店主自留",
+    "rank": 999,
+    "units": [
+      {
+        "channel": "APPLE MUSIC 預購",
+        "first": "雲"
+      }
+    ]
   }
 ]
