@@ -27,10 +27,12 @@
     "5436": {
       "channel": "SOUNDWAVE",
       "member": "光"
-    },
-    "5445": {
+    }
+  },
+  "unitExclude": {
+    "5430": {
       "channel": "SOUNDWAVE",
-      "member": "斗"
+      "member": "耀"
     }
   }
 }

@@ -152,6 +152,9 @@ function allocate(units, pureAll, stock, where, firstMember){
 let CFG = {};
 function computeAll(){
   const info = build(FEED);
+  const ex = CFG.unitExclude || {};            // 個別年曆無法領某成員卡時，例如 {"5430":{"channel":"SOUNDWAVE","member":"耀"}}，改依她的下一志願
+  for (const o in ex){ const e = ex[o], bu = info.byChannel[e.channel]; if (!bu) continue; const mi = MCHAR[e.member];
+    bu.units.forEach(u=>{ if (String(u.order)===String(o)) u.pref = u.pref.filter(x=>x!==mi).concat([mi]); }); }
   const pureQ = (FEED.pure || []).slice().sort((x,y)=>new Date(x.created)-new Date(y.created)).map(p=>({...p}));
   const pureAll = pureQ.slice();
   const pc = CFG.pureCard;                     // 單買純年曆預設領哪個通路的哪位成員
