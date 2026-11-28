@@ -4,7 +4,13 @@
     "member": "雲"
   },
   "pureOverrides": {
-    "5441": "HL SHOP",
-    "5442": "HL SHOP"
+    "5441": {
+      "channel": "HL SHOP",
+      "member": "雲"
+    },
+    "5442": {
+      "channel": "HL SHOP",
+      "member": "雲"
+    }
   }
 }
