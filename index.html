@@ -151,8 +151,12 @@ function computeAll(){
   const info = build(FEED);
   const pureQ = (FEED.pure || []).slice().sort((x,y)=>new Date(x.created)-new Date(y.created)).map(p=>({...p}));
   const pureAll = pureQ.slice();
-  const pc = CFG.pureCard;                     // 單買純年曆指定領哪個通路的哪位成員
+  const pc = CFG.pureCard;                     // 單買純年曆預設領哪個通路的哪位成員
   const pcMember = pc ? MCHAR[pc.member] : undefined;
+  const ov = CFG.pureOverrides || {};          // 個別單買純年曆指定通路，例如 {"5441":"HL SHOP"}
+  const overridden = {};
+  let rest = [];
+  pureQ.forEach(p=>{ const c = ov[p.order]; if (c) (overridden[c] = overridden[c] || []).push(p); else rest.push(p); });
   const res = {};
   for (const ch of CHANNELS){
     const b = info.byChannel[ch];
@@ -162,12 +166,15 @@ function computeAll(){
     const S = Math.max(Math.ceil(b.units.length / 4), ...demand);   // 預排：備到每個人都拿得到第一志願
     const stock = hasGiven ? given.slice() : [S,S,S,S];
     const isPure = pc && pc.channel===ch && pcMember!==undefined;
-    if (isPure && !hasGiven) stock[pcMember] = Math.max(stock[pcMember], demand[pcMember] + pureQ.length);   // 預排時，替純年曆多備他們的卡
-    const q = (!pc || isPure) ? pureQ : [];
+    const mine = (overridden[ch] || []).slice();
+    const takesRest = !pc || isPure;
+    if (isPure && !hasGiven) stock[pcMember] = Math.max(stock[pcMember], demand[pcMember] + rest.length);   // 預排時，替純年曆多備他們的卡
+    const q = mine.concat(takesRest ? rest : []);
     res[ch] = {b, mode: hasGiven ? 'real' : 'auto', S, stock, isPure,
-      out: (b.units.length || hasGiven || (isPure && pureQ.length)) ? allocate(b.units, q, stock, ch, isPure ? pcMember : null) : null};
+      out: (b.units.length || hasGiven || q.length) ? allocate(b.units, q, stock, ch, isPure ? pcMember : null) : null};
+    rest = rest.filter(p=>!p.where);
   }
-  return {info, res, pureAll, pureLeft: pureQ};
+  return {info, res, pureAll, pureLeft: rest};
 }
 
 function renderBoard(ch, r){
